@@ -36,7 +36,7 @@ public class ProjectSecurityProdConfig {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+                config.setAllowedOrigins(Collections.singletonList("https://localhost:4200"));
                 config.setAllowedMethods(Collections.singletonList("*"));
                 config.setAllowCredentials(true);
                 config.setAllowedHeaders(Collections.singletonList("*"));
@@ -49,7 +49,15 @@ public class ProjectSecurityProdConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards","/user").authenticated()
+                        /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+                          .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
+                          .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+                          .requestMatchers( "/myCards").hasAuthority("VIEWCARDS")*/
+                        .requestMatchers("/myAccount").hasRole("USER")
+                        .requestMatchers("/myBalance").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers( "/myCards").hasRole("USER")
+                        .requestMatchers("/user").authenticated()
                         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
