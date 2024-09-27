@@ -2,6 +2,10 @@ package com.example.springsec1.config;
 
 import com.example.springsec1.exceptionhandling.CustomAccessDeniedHandler;
 import com.example.springsec1.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.example.springsec1.filter.AuthoritiesLoggingAfterFilter;
+import com.example.springsec1.filter.AuthoritiesLoggingAtFilter;
+import com.example.springsec1.filter.CsrfCookieFilter;
+import com.example.springsec1.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +17,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -47,6 +52,10 @@ public class ProjectSecurityProdConfig {
                 .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
                         .ignoringRequestMatchers("/contact","/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(),BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .authorizeHttpRequests((requests) -> requests
                         /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")

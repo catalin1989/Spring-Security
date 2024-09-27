@@ -2,7 +2,10 @@ package com.example.springsec1.config;
 
 import com.example.springsec1.exceptionhandling.CustomAccessDeniedHandler;
 import com.example.springsec1.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.example.springsec1.filter.AuthoritiesLoggingAfterFilter;
+import com.example.springsec1.filter.AuthoritiesLoggingAtFilter;
 import com.example.springsec1.filter.CsrfCookieFilter;
+import com.example.springsec1.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +54,9 @@ public class ProjectSecurityConfig {
                         .ignoringRequestMatchers("/contact","/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(),BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
                         /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
                         .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
